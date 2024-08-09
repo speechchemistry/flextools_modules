@@ -1,5 +1,5 @@
 # flextools_modules
-Modules written for [FlexTools](https://github.com/cdfarrow/flextools) to process SIL Language Explorer files. 
+Modules written for [FlexTools](https://github.com/cdfarrow/flextools) to process SIL FieldWorks Language Explorer (FLEx) files. This modules are in development, please ensure that you backup your FLEx file before using them. 
 
 ## Extract Chao tone letters from accent notation and put in Pitch field
 
