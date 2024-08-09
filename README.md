@@ -9,8 +9,7 @@ Goes through all the lexeme forms and extracts Chao tone letters (only)
 from any accent notation and puts it into a Custom Pitch field. You can use
 Bulk Edit Entries in Flex to move these to the desired field. 
 
-Requires that you set the source lexeme field writing system as the default vernacular language. In Flex: Format > Set up vernacular writing systems...
- then ensure that the writing system in the top right is the desired one (using the up and down arrow buttons). It also requires that you create an
- entry level custom field called "Pitch". 
+This FlexTool module requires that you set the source lexeme field writing system as the default vernacular language. To do this in Flex use the menu item Format > Set up vernacular writing systems... then ensure that the writing system in the top right is the desired one (using the up and down arrow buttons). It also requires that you create an
+ entry level custom field called "Pitch" (Tools > Configure > Custom Fields...)
 
- The module should also work as a Flex Process once Flex allows Python 3 processes. 
+ The module should also work as a Flex Process once Flex allows Python 3 processes (at the time of writing it only allows Python 2 processes but the developers are working on upgrading this).
