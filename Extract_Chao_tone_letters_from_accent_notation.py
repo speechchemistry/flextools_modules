@@ -97,8 +97,9 @@ def convert(input_string): # function is renamed so it can be used as an SIL Fle
     #chao_in_spaces = regex.sub(r'\p{L}+',' ',chao_in_text)
     # the six characters in the find part were suggested by ChatGPT
     chao_in_spaces = regex.sub(r'[^\s˥˦˧˨˩]+',' ',chao_in_text) 
-    # then just remove any initial whitespace
+    # remove any leading whitespaces
     no_leading_spaces = regex.sub(r'^\s+','',chao_in_spaces)
+    # and any trailing whitespaces
     output = regex.sub(r'\s+$','',no_leading_spaces)
     return output
 
