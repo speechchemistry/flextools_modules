@@ -72,9 +72,7 @@ def multisub(subs, subject):
     replace = lambda m: substs[m.lastindex - 1]
     return re.sub(pattern, replace, subject)
 
-
-#def find_tone_accents_replace_with_chao_letters(input_string):
-def convert(input_string): # function is renamed so it can be used as an SIL Flex Process
+def convert(input_string): # function is named "convert" so it can be used as an SIL Flex Process
     # ensure string is decomposed into separate code points
     input_decomposed = unicodedata.normalize('NFD',input_string)
     # replace all possible accents with chao tone letters
@@ -92,10 +90,8 @@ def convert(input_string): # function is renamed so it can be used as an SIL Fle
                        ('\u1DC7','˦˧'), # o᷇
                        ('\u1DC9','˦˨˦')], # o᷉
                        input_decomposed)
-    # remove any unicode letters (fortunately chao tone letters aren't counted as lettersǃ)
-    # and replace with space. This assumes that each accent is on a separate syllable.
-    #chao_in_spaces = regex.sub(r'\p{L}+',' ',chao_in_text)
-    # the six characters in the find part were suggested by ChatGPT
+    # find any run of items that aren't a space or tone letter and replace it with a space
+    # the six characters in the first part were suggested by ChatGPT
     chao_in_spaces = regex.sub(r'[^\s˥˦˧˨˩]+',' ',chao_in_text) 
     # remove any leading whitespaces
     no_leading_spaces = regex.sub(r'^\s+','',chao_in_spaces)
@@ -108,4 +104,3 @@ def convert(input_string): # function is renamed so it can be used as an SIL Fle
 
 FlexToolsModule = FlexToolsModuleClass(runFunction = MainFunction,
                                        docs = docs)
-
