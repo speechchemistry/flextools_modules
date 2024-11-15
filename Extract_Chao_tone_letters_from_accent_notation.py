@@ -20,7 +20,7 @@ import regex
 # Documentation for the user:
 
 docs = {FTM_Name       : "Extract Chao tone letters from accent notation and put in pitch field",
-        FTM_Version    : 0.2,
+        FTM_Version    : 0.3,
         FTM_ModifiesDB : True,
         FTM_Synopsis   : "Extracts Chao tone letters (only) from any accent notation",
         FTM_Help       : None,
@@ -81,7 +81,7 @@ def convert(input_string): # function is named "convert" so it can be used as an
                        ('\u0304','˧'), # ō
                        ('\u0300','˨'), # ò
                        ('\u030F','˩'), # ȍ
-                       ('\u030F','˨˦'), # ǒ trying to be more consistent than IPA chart
+                       ('\u030C','˨˦'), # ǒ trying to be more consistent than IPA chart
                        ('\u0302','˦˨'), # ô trying to be more consistent than IPA chart
                        ('\u1DC4','˧˦'), # o᷄ trying to be more consistent than IPA chart
                        ('\u1DC5','˨˧'), # o᷅ trying to be more consistent than IPA chart
