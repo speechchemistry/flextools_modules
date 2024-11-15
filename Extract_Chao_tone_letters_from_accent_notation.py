@@ -20,7 +20,7 @@ import regex
 # Documentation for the user:
 
 docs = {FTM_Name       : "Extract Chao tone letters from accent notation and put in pitch field",
-        FTM_Version    : 0.3,
+        FTM_Version    : 0.4,
         FTM_ModifiesDB : True,
         FTM_Synopsis   : "Extracts Chao tone letters (only) from any accent notation",
         FTM_Help       : None,
@@ -92,10 +92,13 @@ def convert(input_string): # function is named "convert" so it can be used as an
                        input_decomposed)
     # find any run of items that aren't a space or tone letter and replace it with a space
     # the six characters in the first part were suggested by ChatGPT
-    chao_in_spaces = regex.sub(r'[^\s˥˦˧˨˩]+',' ',chao_in_text) 
-    # remove any leading whitespaces
-    no_leading_spaces = regex.sub(r'^\s+','',chao_in_spaces)
-    # and any trailing whitespaces
+    chao_in_spaces = regex.sub(r'[^\s˥˦˧˨˩]+',' ',chao_in_text)
+    # convert any three space runs between words to two space runs
+    # (three spaces occur after any codas and before another word)
+    chao_two_space_gaps = regex.sub(r'   ','  ',chao_in_spaces)
+    # then just remove any initial whitespace
+    no_leading_spaces = regex.sub(r'^\s+','',chao_two_space_gaps)
+    # remove any leading whitespace
     output = regex.sub(r'\s+$','',no_leading_spaces)
     return output
 
