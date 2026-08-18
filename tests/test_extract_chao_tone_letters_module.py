@@ -43,10 +43,10 @@ class FakeReport(object):
 
 
 class FakeProject(object):
-    def __init__(self, forms, pitchField=PITCH_FIELD, isMultiType=True):
+    def __init__(self, forms, pitchField=PITCH_FIELD, fieldType="multi"):
         self._forms = list(forms)
         self._pitchField = pitchField
-        self._isMultiType = isMultiType
+        self._fieldType = fieldType      # "string", "multi" or "other"
         self.writes = []             # (entry, field, text, ws)
         self.tagCalls = []           # LexiconAddTagToField must stay unused
 
@@ -69,10 +69,16 @@ class FakeProject(object):
         return (VERN_WS, VERN_WS_NAME)
 
     def LexiconFieldIsStringType(self, fieldID):
-        return not self._isMultiType
+        return self._fieldType == "string"
+
+    def LexiconFieldIsAnyStringType(self, fieldID):
+        return self._fieldType in ("string", "multi")
 
     def LexiconFieldIsMultiType(self, fieldID):
-        return self._isMultiType
+        # Reproduces the flexlibs bug: this helper reads FLExLCM.CellarMultiTypes,
+        # which FLExLCM never defines, so it raises for every field
+        raise AttributeError(
+            "module 'flexlibs.code.FLExLCM' has no attribute 'CellarMultiTypes'")
 
     # --- the helpers the module writes through ---
 
@@ -99,6 +105,7 @@ def test_dry_run_writes_nothing(chao_module):
     assert "nə̀jɛ᷅t -> ˨ ˨˧" in report.text
     # and the run says plainly that it wrote nothing
     assert "[DRY RUN] Writing Pitch in the %s writing system" % VERN_WS_NAME in report.text
+    assert "[DRY RUN] Would write Pitch for 2 of 2 entries" in report.text
 
 
 def test_writes_converted_text_in_the_vernacular_writing_system(chao_module):
@@ -126,7 +133,9 @@ def test_entries_without_tone_marks_are_left_alone(chao_module):
     report = run(chao_module, project, modifyAllowed=True)
 
     assert project.writes == [(1, PITCH_FIELD, "˨ ˨˧", VERN_WS)]
-    assert "Left 2 entries unchanged" in report.text
+    # the summary has to say what *was* written, not only what was skipped
+    assert "Wrote Pitch for 1 of 3 entries" in report.text
+    assert "left 2 unchanged (no tone marks found)" in report.text
 
 
 def test_missing_pitch_field_reports_an_error_and_writes_nothing(chao_module):
@@ -150,17 +159,36 @@ def test_reports_the_writing_system_it_writes_to(chao_module):
     assert VERN_WS_NAME in report.text
 
 
-@pytest.mark.parametrize("isMultiType, expected", [
-    (True, "MultiUnicode or MultiString"),
-    (False, "String"),
+@pytest.mark.parametrize("fieldType, expected", [
+    ("multi", "The Pitch field is a MultiUnicode or MultiString field"),
+    ("string", "The Pitch field is a String field"),
+    ("other", "The Pitch field is not a text field"),
 ])
-def test_reports_the_pitch_field_type(chao_module, isMultiType, expected):
+def test_reports_the_pitch_field_type(chao_module, fieldType, expected):
     # The field's type decides whether LexiconAddTagToField would have worked
-    project = FakeProject(["nə̀jɛ᷅t"], isMultiType=isMultiType)
+    project = FakeProject(["nə̀jɛ᷅t"], fieldType=fieldType)
 
     report = run(chao_module, project, modifyAllowed=True)
 
-    assert ("The Pitch field holds %s data" % expected) in report.text
+    assert expected in report.text
+
+
+def test_field_type_is_unknown_when_the_helpers_are_missing(chao_module):
+    # Older versions of flexlibs have no field type helpers at all
+    class OlderFlexlibsProject(FakeProject):
+        def LexiconFieldIsStringType(self, fieldID):
+            raise AttributeError("LexiconFieldIsStringType")
+
+        def LexiconFieldIsAnyStringType(self, fieldID):
+            raise AttributeError("LexiconFieldIsAnyStringType")
+
+    project = OlderFlexlibsProject(["nə̀jɛ᷅t"])
+
+    report = run(chao_module, project, modifyAllowed=True)
+
+    assert "The type of the Pitch field could not be determined" in report.text
+    # a missing diagnostic must not stop the real work
+    assert project.writes == [(0, PITCH_FIELD, "˨ ˨˧", VERN_WS)]
 
 
 def test_progress_is_reported_over_all_entries(chao_module):

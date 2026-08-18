@@ -24,7 +24,7 @@ from chao_tones import convert
 # Documentation for the user:
 
 docs = {FTM_Name       : "Extract Chao tone letters from accent notation and put in pitch field",
-        FTM_Version    : 0.6,
+        FTM_Version    : 0.7,
         FTM_ModifiesDB : True,
         FTM_Synopsis   : "Extracts Chao tone letters (only) from any accent notation",
         FTM_Help       : None,
@@ -68,16 +68,21 @@ def describeFieldType(project, fieldID):
     The type decides how flexlibs can reach the field: LexiconAddTagToField
     reads the field back without a writing system, which raises AttributeError
     on a multi-string field, so this module writes with LexiconSetFieldText.
+
+    LexiconFieldIsMultiType() is deliberately not used. In flexlibs 1.2.8 and
+    flexlibs2 2.3.1 it reads FLExLCM.CellarMultiTypes, a name FLExLCM never
+    defines, so it raises AttributeError for every field. Any field that is a
+    string type but not a String is one of the multi-string types.
     """
     try:
         if project.LexiconFieldIsStringType(fieldID):
-            return "String"
-        if project.LexiconFieldIsMultiType(fieldID):
-            return "MultiUnicode or MultiString"
+            return "The Pitch field is a String field"
+        if project.LexiconFieldIsAnyStringType(fieldID):
+            return "The Pitch field is a MultiUnicode or MultiString field"
+        return "The Pitch field is not a text field"
     except AttributeError:
         # Older versions of flexlibs don't offer these helpers
-        return "an unknown"
-    return "an unrecognised"
+        return "The type of the Pitch field could not be determined"
 
 
 #----------------------------------------------------------------
@@ -97,8 +102,7 @@ def MainFunction(project, report, modifyAllowed):
         AddReportToField = False
 
     if flagsField:
-        report.Info("The Pitch field holds %s data"
-                    % describeFieldType(project, flagsField))
+        report.Info(describeFieldType(project, flagsField))
 
     # Report the writing system: writing to the wrong one stores text that the
     # field never displays, which otherwise looks exactly like doing nothing
@@ -111,6 +115,7 @@ def MainFunction(project, report, modifyAllowed):
     report.Info("    %d entries" % numberEntries)
     report.ProgressStart(numberEntries)
 
+    converted = 0
     unchanged = 0
     for entryNumber, entry in enumerate(project.LexiconAllEntries()):
         report.ProgressUpdate(entryNumber)
@@ -121,10 +126,17 @@ def MainFunction(project, report, modifyAllowed):
             # Writing the empty result would clear a value entered by hand
             unchanged += 1
             continue
+        converted += 1
         if AddReportToField:
             project.LexiconSetFieldText(entry, flagsField, chao_letters, pitchWS)
 
-    report.Info("Left %d entries unchanged (no tone marks found)" % unchanged)
+    # Say what was written as well as what was skipped: a large skipped count
+    # on its own reads as though nothing was converted
+    report.Info("%s%s Pitch for %d of %d entries; left %d unchanged "
+                "(no tone marks found)"
+                % (dryRun,
+                   "Wrote" if AddReportToField else "Would write",
+                   converted, numberEntries, unchanged))
 
 #----------------------------------------------------------------
 # The name 'FlexToolsModule' must be defined like this:
