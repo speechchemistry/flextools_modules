@@ -7,6 +7,8 @@ Finds any pronunciation media file paths that start with 'Media' and changes the
 
 `Extract_Chao_tone_letters_from_accent_notation.py`
 
+The canonical copy of this module now lives in [flex-string-converters](https://github.com/speechchemistry/flex-string-converters), alongside the converter it calls. The copy here is a mirror kept during the move; change it there, not here.
+
 Goes through all the lexeme forms and extracts Chao tone letters (only) 
 from any accent notation and puts it into a Custom Pitch field. For example [nə̀jɛ᷅t] -> [˨ ˨˧]. You can use
 Bulk Edit Entries in Flex to move these to the desired field. 

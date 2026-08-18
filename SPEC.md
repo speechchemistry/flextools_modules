@@ -24,6 +24,8 @@ Module: `Fix_Pronunciation_Media_Paths.py`. `FTM_ModifiesDB` is true.
 
 Module: `Extract_Chao_tone_letters_from_accent_notation.py`, with the conversion itself in `Lib/chao_tones.py`. `FTM_ModifiesDB` is true.
 
+The canonical copy of this module, its converter and this specification now live in [flex-string-converters](https://github.com/speechchemistry/flex-string-converters) (where the converter is `converters/chao_tones.py`). What follows is a mirror kept during the move: change it there, not here.
+
 **Reads.** The lexeme form of every entry, via `LexiconGetLexemeForm(entry)`. The lexeme form is read in the project's default vernacular writing system, so that writing system must be the one holding the accent notation.
 
 **Transform.** Applied by `convert()` in `Lib/chao_tones.py`, which the module imports. It takes and returns a plain string and needs no FLEx project, so the same rules hold whether it is called from FlexTools, from the command line, or as a FLEx Process:
