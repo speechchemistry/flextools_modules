@@ -1,6 +1,11 @@
 # flextools_modules
 Modules written for [FlexTools](https://github.com/cdfarrow/flextools) to process SIL FieldWorks Language Explorer (FLEx) files. These modules are in development, please ensure that you backup your FLEx file before using them. 
 
+> **`Extract_Chao_tone_letters_from_accent_notation.py` has moved.** Its canonical home is now
+> [flex-string-converters](https://github.com/speechchemistry/flex-string-converters), alongside the
+> converter it calls. Get it from there. The copy here is an unmaintained mirror, kept only while the
+> move settles, and it will be deleted; don't change it here.
+
 `Fix_Pronunciation_Media_Paths.py`
 
 Finds any pronunciation media file paths that start with 'Media' and changes them to start with 'AudioVisual'. This module was written using [FlexToolsMCP](https://github.com/MattGyverLee/FlexToolsMCP).
