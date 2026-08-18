@@ -11,8 +11,12 @@ Goes through all the lexeme forms and extracts Chao tone letters (only)
 from any accent notation and puts it into a Custom Pitch field. For example [nə̀jɛ᷅t] -> [˨ ˨˧]. You can use
 Bulk Edit Entries in Flex to move these to the desired field. 
 
+Running it again replaces the Pitch value rather than adding to it, so a second run over the same entries leaves the same result as the first. Entries whose lexeme form has no tone marks are left alone, so a Pitch value you typed in yourself is never cleared.
+
 This FlexTool module requires that you set the source lexeme field writing system as the default vernacular language. To do this in Flex use the menu item Format > Set up vernacular writing systems... then ensure that the writing system in the top right is the desired one (using the up and down arrow buttons). It also requires that you create an
  entry level custom field called "Pitch" (Tools > Configure > Custom Fields...)
+
+The Pitch field should show that same default vernacular writing system, because that is the one the module writes to. Each run reports which writing system it used and what type the Pitch field is, so you can check. If your Pitch field uses a different writing system, set the `PITCH_WS` constant near the top of the module to its language tag.
 
 The conversion itself lives in `Lib/chao_tones.py`, so copy the `Lib` folder into your FlexTools Modules folder alongside `Extract_Chao_tone_letters_from_accent_notation.py`, keeping the same structure. FlexTools only looks one folder deep for modules, so nothing in `Lib` is mistaken for a module of its own.
 

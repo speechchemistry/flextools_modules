@@ -54,14 +54,20 @@ Module: `Extract_Chao_tone_letters_from_accent_notation.py`, with the conversion
 
 Substitutions in step 2 are simultaneous, not sequential, so an output tone letter is never re-matched as input. Example: `[nə̀jɛ᷅t]` → `˨ ˨˧`.
 
-**Writes.** The entry-level custom field named `Pitch`, via `LexiconAddTagToField(entry, flagsField, chao_letters)`, and only when `modifyAllowed` is true. The write happens for every entry, including entries whose converted result is the empty string.
+**Writes.** The entry-level custom field named `Pitch`, via `LexiconSetFieldText(entry, flagsField, chao_letters, ws)`, and only when `modifyAllowed` is true.
 
-**Reporting.** An entry count, then a progress bar over all entries (`report.ProgressStart` / `report.ProgressUpdate`), then one `report.Info` line per entry showing `<lexeme form> -> <tone letters>`.
+- The value **replaces** whatever the field held, so running the module twice over the same entries leaves the same result as running it once.
+- Entries whose converted result is the empty string are **left untouched**, so a `Pitch` value entered by hand is never cleared by a lexeme form that carries no tone marks. The consequence is that removing the tone marks from a lexeme form leaves the previous `Pitch` value in place.
+- `ws` is the project's default vernacular writing system — the same one the lexeme form is read from — unless the module's `PITCH_WS` constant names another. It is always passed explicitly, because `LexiconSetFieldText` otherwise defaults to the default *analysis* writing system, which would store text that a vernacular field never displays.
+- `LexiconAddTagToField` is deliberately not used: it reads the field back without a writing system, which raises `AttributeError` on a multi-string custom field.
+
+**Reporting.** The type of the `Pitch` field and the writing system being written to (that line prefixed with `[DRY RUN] ` when `modifyAllowed` is false), then an entry count, then a progress bar over all entries (`report.ProgressStart` / `report.ProgressUpdate`), then one `report.Info` line per entry showing `<lexeme form> -> <tone letters>`, then a final `Left <n> entries unchanged (no tone marks found)` summary.
 
 **Prerequisites.**
 
 - An entry-level custom field called `Pitch` must exist (Tools > Configure > Custom Fields…). If it is missing and `modifyAllowed` is true, the module reports `The entry-level Pitch field is missing` via `report.Error` and continues in read-only mode: it still reports every conversion but writes nothing.
 - The writing system holding the source lexeme form must be the project's default vernacular writing system (Format > Set up vernacular writing systems…).
+- The `Pitch` field must show that same writing system, since that is the alternative the module writes. A `Pitch` field configured for the analysis writing system will not display what is written unless `PITCH_WS` is changed to match.
 
 **Downstream.** Values land in `Pitch` so they can be moved to the desired field with Bulk Edit Entries in FLEx.
 
@@ -71,8 +77,6 @@ Substitutions in step 2 are simultaneous, not sequential, so an output tone lett
 
 Behaviours that are not pinned down yet. Add to the sections above as each is settled or implemented, rather than speculating here.
 
-- The exact semantics of `LexiconAddTagToField` when the `Pitch` field already holds a value: whether re-running the tone-letter module appends, replaces, or duplicates. Until this is specified, treat a second run over the same entries as unspecified.
-- Whether the tone-letter module should skip entries whose converted result is empty instead of writing an empty value.
 - Behaviour when an entry has no lexeme form in the default vernacular writing system.
 - Reading a source form from a writing system other than the default vernacular.
 - Case-insensitive or non-initial matching of the `Media\` prefix, and any other media path prefixes worth rewriting.
