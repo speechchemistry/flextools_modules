@@ -22,11 +22,11 @@ Module: `Fix_Pronunciation_Media_Paths.py`. `FTM_ModifiesDB` is true.
 
 ## Extract Chao Tone Letters From Accent Notation
 
-Module: `Extract_Chao_tone_letters_from_accent_notation.py`. `FTM_ModifiesDB` is true.
+Module: `Extract_Chao_tone_letters_from_accent_notation.py`, with the conversion itself in `Lib/chao_tones.py`. `FTM_ModifiesDB` is true.
 
 **Reads.** The lexeme form of every entry, via `LexiconGetLexemeForm(entry)`. The lexeme form is read in the project's default vernacular writing system, so that writing system must be the one holding the accent notation.
 
-**Transform.** Applied by the module-level `convert()` function, which takes and returns a plain string and needs no FLEx project:
+**Transform.** Applied by `convert()` in `Lib/chao_tones.py`, which the module imports. It takes and returns a plain string and needs no FLEx project, so the same rules hold whether it is called from FlexTools, from the command line, or as a FLEx Process:
 
 1. The input is normalised to NFD, so accents are separate combining code points.
 2. Each recognised combining accent is replaced by its Chao tone letters:
@@ -64,6 +64,8 @@ Substitutions in step 2 are simultaneous, not sequential, so an output tone lett
 - The writing system holding the source lexeme form must be the project's default vernacular writing system (Format > Set up vernacular writing systems…).
 
 **Downstream.** Values land in `Pitch` so they can be moved to the desired field with Bulk Edit Entries in FLEx.
+
+**Command line.** `Lib/chao_tones.py` is also runnable directly. Text given as arguments is converted one result per line, in the order given. With no arguments it reads standard input line by line and writes one converted line per input line, so it works as a filter in a pipeline. Results go to stdout and diagnostics to stderr; stdin and stdout are both read and written as UTF-8 regardless of the console's own encoding. The conversion applied is the same `convert()` documented above.
 
 ## Not Yet Specified
 

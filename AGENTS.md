@@ -69,16 +69,16 @@ Skills in this repository:
 
 ## FlexTools Module Conventions
 
-These modules are loaded and run by [FlexTools](https://github.com/cdfarrow/flextools) against a live FLEx project; they are not command-line scripts. The conventions below replace the usual CLI stdout/stderr rules.
+These modules are loaded and run by [FlexTools](https://github.com/cdfarrow/flextools) against a live FLEx project; they are not command-line scripts, except for shared helpers under `Lib/`, which are usable from the command line and follow [CLI Script Conventions](#cli-script-conventions). The conventions below replace the usual CLI stdout/stderr rules.
 
-- Each module is a single self-contained `.py` file at the repo root, named after what it does, opening with a header comment block: title, one-line purpose, author, month and year, and `Platforms: Python .NET and IronPython`.
+- Each module is a single self-contained `.py` file at the repo root, named after what it does, opening with a header comment block: title, one-line purpose, author, month and year, and `Platforms: Python .NET and IronPython`. Pure logic that is also used outside FlexTools (a command-line tool, a FLEx Process) may live in a shared file under `Lib/`, imported by the module after adding that folder to `sys.path` from `__file__`. Keep it in `Lib/` rather than beside the module: FlexTools scans each module folder one level deep, so a sibling `.py` would be imported and warned about as a failed module.
 - Keep the standard shape, in this order: `# -*- coding: utf-8 -*-`, `from flextoolslib import *`, a `docs` dict (`FTM_Name`, `FTM_Version`, `FTM_ModifiesDB`, `FTM_Synopsis`, `FTM_Help`, `FTM_Description`), `MainFunction(project, report, modifyAllowed)`, and finally `FlexToolsModule = FlexToolsModuleClass(runFunction = MainFunction, docs = docs)`. FlexTools looks up that last name exactly, so it must be spelled as written.
 - Bump `FTM_Version` in `docs` whenever a module's behaviour changes.
 - Honour `modifyAllowed`: when it is false, do the same reading and reporting but write nothing, so a preview run is a genuine dry run (see the `[DRY RUN]` prefix in `Fix_Pronunciation_Media_Paths.py`).
 - Report through the `report` object (`report.Info`, `report.Warning`, `report.Error`), never `print` — this is the FlexTools counterpart of separating result output from diagnostics. Use `report.ProgressStart` and `report.ProgressUpdate` for passes over the whole lexicon.
 - Fail gracefully on missing prerequisites (e.g. a required custom field): `report.Error` and degrade to read-only rather than raising.
 - Reach FLEx data through the `flextoolslib` project helpers (`LexiconAllEntries`, `LexiconNumberOfEntries`, `LexiconGetLexemeForm`, `LexiconGetEntryCustomFieldNamed`, `LexiconAddTagToField`, …) in preference to walking raw LCM attributes. Where the model may not hold an object, guard with `getattr(obj, "Name", None)` and skip rather than assume.
-- Keep pure logic in module-level functions separate from `MainFunction`, so it can be exercised without a FLEx project and reused as a FLEx Process (see `convert()` in `Extract_Chao_tone_letters_from_accent_notation.py`).
+- Keep pure logic in module-level functions separate from `MainFunction`, so it can be exercised without a FLEx project and reused as a FLEx Process (see `convert()` in `Lib/chao_tones.py`, imported by `Extract_Chao_tone_letters_from_accent_notation.py`).
 - Add brief comments for non-obvious logic so future readers can follow intent.
 
 ## Data Safety
@@ -87,11 +87,17 @@ These modules are loaded and run by [FlexTools](https://github.com/cdfarrow/flex
 - Prefer narrowly scoped edits over broad rewrites: replace a matched prefix once (`path.replace("Media\\", "AudioVisual\\", 1)`) rather than substituting everywhere in a value.
 - Keep the README's standing instruction that users back up their FLEx project before running these modules; don't remove or soften it.
 
+## CLI Script Conventions
+
+- For scripts that emit machine-readable output:
+  - Write result content only to stdout.
+  - Write progress, diagnostics, and errors to stderr.
+
 ## Testing Approach
 
 - Use `pytest`, with tests under `tests/`, run as `python -m pytest` from the repo root.
 - Test the pure helper functions (e.g. `convert()`), which need no FLEx project. `MainFunction` needs a live FLEx project, so verify it by running the module in FlexTools with modification disabled first.
-- `flextoolslib` only installs on Windows alongside FieldWorks, so importing a module file fails elsewhere at its top-level `from flextoolslib import *`. Stub it in `tests/conftest.py` (insert a stub `flextoolslib` into `sys.modules`, then load the module by path) so tests run on any platform without splitting helpers out of the single-file module.
+- `flextoolslib` only installs on Windows alongside FieldWorks, so importing a module file fails elsewhere at its top-level `from flextoolslib import *`. Test shared `Lib/` helpers by importing them directly, since they have no `flextoolslib` import. Where a test must import a module file itself, stub `flextoolslib` in `tests/conftest.py` (insert a stub into `sys.modules`, then load the module by path) so tests still run on any platform.
 - Prefer small parametrized assertions while a helper's output is short strings. Switch to approval testing when output becomes large or awkward to assert inline: the checked-in artifact is the approved one, a mismatch produces a received artifact for review, and changes are never auto-accepted without explicit confirmation.
 - Keep approved artifacts human-reviewable and deterministic so diffs are meaningful.
 - Follow TDD for behaviour changes: add or extend the test and confirm it fails first (red), write the minimum implementation to make it pass (green), then refactor with the tests as a safety net.

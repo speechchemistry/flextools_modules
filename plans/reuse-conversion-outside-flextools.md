@@ -1,6 +1,8 @@
 # Reuse the Chao tone conversion outside FlexTools
 
-Status: approved 2026-08-18, not yet implemented.
+Status: approved 2026-08-18, implemented 2026-08-18. Historical record — where this plan disagrees
+with the current `AGENTS.md`, `SPEC.md`, or code, those win. See
+[Changes after approval](#changes-after-approval).
 
 ## Context
 
@@ -180,3 +182,19 @@ Under [Extract Chao Tone Letters From Accent Notation](../SPEC.md#extract-chao-t
   headings).
 - Cross-check AGENTS.md against the code: every amended bullet must describe what the repo now
   actually does.
+
+## Changes after approval
+
+Appended rather than edited into the body above, so the approved plan stays readable as what it was.
+
+- **`.gitignore` added** (`__pycache__/`, `*.pyc`, `.pytest_cache/`). Not in the plan, but running
+  the tests produces bytecode next to the module and in `tests/`, and none of it belongs in git.
+- **CRLF line endings preserved** in `Extract_Chao_tone_letters_from_accent_notation.py`. Editing it
+  flattened the file to LF, which turned a nine-line change into a whole-file rewrite in `git diff`;
+  the CRLF endings were restored to match the rest of the repo's `.py` files. The new files under
+  `Lib/` and `tests/` use LF.
+- **`convert()` was moved by script rather than retyped**, splicing the exact lines out of the
+  original file, so the substitution table kept its `\uXXXX` escapes instead of literal combining
+  marks. Equivalence was then checked by running the `HEAD` version of `convert()` and the new one
+  over 530 generated inputs (each accent on several bases, plus NFC/NFD, codas, multi-word and
+  whitespace-only cases): zero differences.
